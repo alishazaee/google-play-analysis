@@ -18,6 +18,8 @@ LOCAL_APPS = [
     'gooanalysis.common.apps.CommonConfig',
     'gooanalysis.users.apps.UsersConfig',
     'gooanalysis.authentication.apps.AuthenticationConfig',
+    'gooanalysis.applists.apps.ApplistsConfig',
+
 ]
 
 THIRD_PARTY_APPS = [
