@@ -8,7 +8,7 @@ from django.contrib.auth import get_user_model
 class Applications(BaseModel):
     name=models.CharField(max_length=255)
     category = models.CharField(max_length=255)
-    app_id = models.CharField(max_length=255 , primary_key=True)
+    app_id = models.CharField(max_length=255 , unique=True)
     
     def __str__(self) -> str:
         return self.name
