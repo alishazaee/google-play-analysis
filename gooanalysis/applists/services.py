@@ -5,6 +5,6 @@ from .models import Applications
 
 
 @transaction.atomic
-def create_app(*, name:str) -> Applications:
-    application = Applications.objects.create( name=name )
+def create_app(*, name:str , app_id: str , category: str ) -> Applications:
+    application = Applications.objects.create( name=name  , app_id = app_id , category = category )
     return application
