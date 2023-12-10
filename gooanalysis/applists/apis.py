@@ -16,9 +16,13 @@ from .models import Applications
 class AppApi(APIView):
     class InputAppSerializer(serializers.Serializer):
         name = serializers.CharField(max_length=255)
+        app_id = serializers.CharField(max_length=255)
+        category = serializers.CharField(max_length=255)
 
     class OutputAppSerializer(serializers.Serializer):
         name = serializers.CharField(max_length=255)
+        app_id = serializers.CharField(max_length=255)
+        category = serializers.CharField(max_length=255)
 
     class Pagination(LimitOffsetPagination):
         default_limit = 10
