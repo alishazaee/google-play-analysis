@@ -30,6 +30,8 @@ class AppApi(APIView):
         try:
             app = create_app(
                     name=serializer.validated_data.get("name"),
+                    app_id=serializer.validated_data.get("app_id"),
+                    category=serializer.validated_data.get("category"),
                     )
         except Exception as ex:
             return Response(
