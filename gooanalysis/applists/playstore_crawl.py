@@ -6,6 +6,7 @@ from pathlib import Path
 import os
 from psycopg2 import sql 
 import psycopg2
+from datetime import datetime
 
 
 def fetch_reviews(app_id, count=1000):
@@ -45,17 +46,28 @@ def fetch_app_details(app_id):
         "score": result.get('score', 'Unknown'),
         "minInstalls": result.get('score', 'Unknown'),
         "total_reviews": result.get('reviews', 'Unknown'),
-        "updated_at": result.get('updated', 'Unknown'),
+        "updated_at": str(datetime.fromtimestamp((result.get('updated')))),
         "version": result.get('version', 'Unknown'),
         "adSupported": result.get('adSupported', 'Unknown'),
-        "ratings": result.get('contentRating', 'Unknown')  
+        "ratings": result.get('contentRating', 'Unknown'),
+        "app_id": app_id
     }
 
 
 
 def DB_Connector():
-    return None
+    conn = psycopg2.connect(
+        dbname="gooanalysis",
+        user="user",
+        password="password",
+        host="127.0.0.1",
+        port="5432"
+    )
 
+    # Creating a cursor object using the cursor() method
+    
+
+    return conn
 
 def CREATE_TABLE(connector): 
     conn = connector
@@ -95,8 +107,15 @@ def CREATE_TABLE(connector):
     conn.close()
 
 
+def APP_INTO_DB():
+    connector = DB_Connector()
+    CREATE_TABLE(connector=connector)
+    connector = DB_Connector()
+    APP_DETAIL_UPDATE(app_details = fetch_app_details(app_id="com.whatsapp") , new_reviews_list=fetch_reviews(app_id="com.whatsapp"),connector=connector)
 
-def APP_INTO_DB(app_details, new_reviews_list ,connector):
+
+
+def APP_DETAIL_UPDATE(app_details, new_reviews_list ,connector):
     conn = connector
     cursor = conn.cursor()
 
@@ -106,21 +125,22 @@ def APP_INTO_DB(app_details, new_reviews_list ,connector):
                 app_details['version'], app_details['adSupported'], app_details['ratings'])
     
     cursor.execute('''
-        INSERT INTO Apps (app_id, downloads, score, min_installs, total_reviews, updated_at, version, ad_supported, ratings)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT(app_id) DO UPDATE SET
-        downloads = excluded.downloads,
-        score = excluded.score,
-        min_installs = excluded.min_installs,
-        total_reviews = excluded.total_reviews,
-        updated_at = excluded.updated_at,
-        version = excluded.version,
-        ad_supported = excluded.ad_supported,
-        ratings = excluded.ratings;
+        INSERT INTO Apps (app_id, downloads, score, mininstalls, total_reviews, updated_at, version, adsupported, ratings)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        ON CONFLICT (app_id) DO UPDATE SET
+        downloads = EXCLUDED.downloads,
+        score = EXCLUDED.score,
+        mininstalls = EXCLUDED.minInstalls,
+        total_reviews = EXCLUDED.total_reviews,
+        updated_at = EXCLUDED.updated_at,
+        version = EXCLUDED.version,
+        adsupported = EXCLUDED.adSupported,
+        ratings = EXCLUDED.ratings;
     ''', app_data)
-
+    
     # Fetch existing reviews for the app
-    cursor.execute('SELECT review_id, review_at, user_name, thumbs_up_count, score, content FROM Reviews WHERE app_id = ?', (app_details['app_id'],))
+    app_id = app_details['app_id']
+    cursor.execute("SELECT review_id, review_date, username, thumbsupcount, score, content FROM Reviews WHERE app_id = %s", (app_id,))
     existing_reviews = {row[0]: row[1:] for row in cursor.fetchall()}
 
     # Update or insert reviews
@@ -131,16 +151,15 @@ def APP_INTO_DB(app_details, new_reviews_list ,connector):
                 # Update the review
                 update_data = (review['at'], review['userName'], review['thumbsUpCount'], review['score'], review['content'], review['review_id'])
                 cursor.execute('''
-                    UPDATE Reviews SET review_at = ?, user_name = ?, thumbs_up_count = ?, score = ?, content = ?
+                    UPDATE Reviews SET review_date = ?, username = ?, thumbsupcount = ?, score = ?, content = ?
                     WHERE review_id = ?
                 ''', update_data)
         else:
             # Insert new review
             insert_data = (review['review_id'], app_details['app_id'], review['at'], review['userName'], review['thumbsUpCount'], review['score'], review['content'])
             cursor.execute('''
-                INSERT INTO Reviews (review_id, app_id, review_at, user_name, thumbs_up_count, score, content)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', insert_data)
+                INSERT INTO Reviews (review_id, app_id, review_date, username, thumbsupcount, score, content) VALUES (%s, %s, %s, %s, %s, %s, %s)'''
+                , insert_data)
 
     # Commit the transaction and close the connection
     conn.commit()
