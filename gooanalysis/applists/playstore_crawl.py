@@ -144,26 +144,65 @@ def APP_DETAIL_UPDATE(app_details, new_reviews_list ,connector):
     existing_reviews = {row[0]: row[1:] for row in cursor.fetchall()}
 
     # Update or insert reviews
-    for review in existing_reviews:
-        if review[review['review_id']] in new_reviews_list:
-            # iterate reviews if review id not in new review list  -> pak kon 
-            # if bood update bokon if ness
-            # age nabood ham bezaresg
-            # Check if the review data has changed
-            if existing_reviews[review['review_id']] != (review['at'], review['userName'], review['thumbsUpCount'], review['score'], review['content']):
-                # Update the review
+    # for review in existing_reviews:
+    #     if review[review['review_id']] in new_reviews_list:
+    #         # iterate reviews if review id not in new review list  -> pak kon 
+    #         # if bood update bokon if ness
+    #         # age nabood ham bezaresg
+    #         # Check if the review data has changed
+    #         if existing_reviews[review['review_id']] != (review['at'], review['userName'], review['thumbsUpCount'], review['score'], review['content']):
+    #             # Update the review
+    #             update_data = (review['at'], review['userName'], review['thumbsUpCount'], review['score'], review['content'], review['review_id'])
+    #             cursor.execute('''
+    #                 UPDATE Reviews SET review_date = ?, username = ?, thumbsupcount = ?, score = ?, content = ?
+    #                 WHERE review_id = ?
+    #             ''', update_data)
+    #     else:
+    #         # Insert new review
+    #         insert_data = (review['review_id'], app_details['app_id'], review['at'], review['userName'], review['thumbsUpCount'], review['score'], review['content'])
+    #         cursor.execute('''
+    #             INSERT INTO Reviews (review_id, app_id, review_date, username, thumbsupcount, score, content) VALUES (%s, %s, %s, %s, %s, %s, %s)'''
+    #             , insert_data)
+
+    # # Commit the transaction and close the connection
+    # conn.commit()
+    # conn.close()
+    
+    new_review_ids = {review['review_id'] for review in new_reviews_list}
+
+    # Fetch existing reviews for the app
+    cursor.execute("SELECT review_id, review_date, username, thumbsupcount, score, content FROM Reviews WHERE app_id = %s", (app_details['app_id'],))
+    existing_reviews = {row[0]: row[1:] for row in cursor.fetchall()}
+
+    # Update or insert new reviews and check for content changes
+    for review in new_reviews_list:
+        existing_review_data = existing_reviews.get(review['review_id'])
+
+        # Check if the review exists and if the content has changed
+        if existing_review_data:
+            if existing_review_data[-1] != review['content']:  # Comparing the content field
+                # Update the review as the content has changed
                 update_data = (review['at'], review['userName'], review['thumbsUpCount'], review['score'], review['content'], review['review_id'])
                 cursor.execute('''
-                    UPDATE Reviews SET review_date = ?, username = ?, thumbsupcount = ?, score = ?, content = ?
-                    WHERE review_id = ?
+                    UPDATE Reviews SET review_date = %s, username = %s, thumbsupcount = %s, score = %s, content = %s
+                    WHERE review_id = %s
                 ''', update_data)
         else:
             # Insert new review
             insert_data = (review['review_id'], app_details['app_id'], review['at'], review['userName'], review['thumbsUpCount'], review['score'], review['content'])
             cursor.execute('''
-                INSERT INTO Reviews (review_id, app_id, review_date, username, thumbsupcount, score, content) VALUES (%s, %s, %s, %s, %s, %s, %s)'''
-                , insert_data)
+                INSERT INTO Reviews (review_id, app_id, review_date, username, thumbsupcount, score, content) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            ''', insert_data)
 
-    # Commit the transaction and close the connection
+    # Delete reviews that are not in the new reviews list
+    reviews_to_delete = existing_reviews.keys() - new_review_ids
+    for review_id in reviews_to_delete:
+        cursor.execute("DELETE FROM Reviews WHERE review_id = %s", (review_id,))
+
+    # Commit the transaction
     conn.commit()
+
+    # Close the cursor and connection if they won't be used outside this function
+    cursor.close()
     conn.close()
