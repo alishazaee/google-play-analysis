@@ -111,7 +111,7 @@ def APP_INTO_DB():
     connector = DB_Connector()
     CREATE_TABLE(connector=connector)
     connector = DB_Connector()
-    APP_DETAIL_UPDATE(app_details = fetch_app_details(app_id="com.whatsapp") , new_reviews_list=fetch_reviews(app_id="com.whatsapp"),connector=connector)
+    APP_DETAIL_UPDATE(app_details = fetch_app_details(app_id="com.instagram.android") , new_reviews_list=fetch_reviews(app_id="com.instagram.android"),connector=connector)
 
 
 
