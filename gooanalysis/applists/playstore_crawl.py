@@ -144,8 +144,11 @@ def APP_DETAIL_UPDATE(app_details, new_reviews_list ,connector):
     existing_reviews = {row[0]: row[1:] for row in cursor.fetchall()}
 
     # Update or insert reviews
-    for review in new_reviews_list:
-        if review['review_id'] in existing_reviews:
+    for review in existing_reviews:
+        if review[review['review_id']] in new_reviews_list:
+            # iterate reviews if review id not in new review list  -> pak kon 
+            # if bood update bokon if ness
+            # age nabood ham bezaresg
             # Check if the review data has changed
             if existing_reviews[review['review_id']] != (review['at'], review['userName'], review['thumbsUpCount'], review['score'], review['content']):
                 # Update the review

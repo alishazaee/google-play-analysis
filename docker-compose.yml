@@ -11,14 +11,6 @@ services:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
 
-  rabbitmq:
-    image: "rabbitmq:alpine"
-    container_name: rabbitmq
-    healthcheck:
-      test: rabbitmq-diagnostics -q ping
-      interval: 30s
-      timeout: 30s
-      retries: 3
 
   django:
     build:
