@@ -44,7 +44,6 @@ services:
       - .:/app
     depends_on:
       - db
-      - rabbitmq
     restart: on-failure
 
   beats:

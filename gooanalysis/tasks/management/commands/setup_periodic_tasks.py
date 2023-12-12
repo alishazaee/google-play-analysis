@@ -3,7 +3,7 @@ from django.db import transaction
 from django.utils.timezone import get_default_timezone_name
 
 from django_celery_beat.models import IntervalSchedule, CrontabSchedule, PeriodicTask
-from gooanalysis.crawler.tasks import hello2
+from gooanalysis.tasks.tasks import crawl_and_save_into_db
 
 class Command(BaseCommand):
     help = """
@@ -41,9 +41,9 @@ class Command(BaseCommand):
         """
         periodic_tasks_data = [
         {
-            'task': hello2,
+            'task': crawl_and_save_into_db,
             'name': 'Periodic task description',
-            # EveryMinute to everyday
+            # Every 5 Minite to everyday
             # https://crontab.guru/#45_15_*_*_*
             'cron': {
                 'minute': '*',
