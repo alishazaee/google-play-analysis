@@ -38,3 +38,8 @@ docker compose -f docker-compose.dev.yml up -d
 ```
 python manage.py runserver
 ```
+pip install -U "celery[redis]"
+
+
+celery -A gooanalysis.tasks worker -l info --without-gossip --without-mingle --without-heartbeat
+celery -A gooanalysis.tasks beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler

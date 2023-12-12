@@ -19,6 +19,7 @@ LOCAL_APPS = [
     'gooanalysis.users.apps.UsersConfig',
     'gooanalysis.authentication.apps.AuthenticationConfig',
     'gooanalysis.applists.apps.ApplistsConfig',
+    'gooanalysis.tasks.apps.TasksConfig',
 
 ]
 
