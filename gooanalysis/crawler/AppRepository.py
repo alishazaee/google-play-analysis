@@ -12,41 +12,51 @@ class AppRepository:
     def __init__(self, connector):
         self.connector = connector
 
-    def create_table(self):
+
+    def create_app_table(self):
         with self.connector.cursor() as cursor:
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS Apps (
                     app_id VARCHAR(255) PRIMARY KEY,
-                    downloads VARCHAR(255),
-                    score REAL,
-                    minInstalls INT,
-                    total_reviews INT,
-                    updated_at TIMESTAMP,
                     version VARCHAR(255),
-                    adSupported BOOLEAN,
                     ratings VARCHAR(255)
                 );
+                CREATE TABLE IF NOT EXISTS AppAttributes (
+                app_id VARCHAR(255) NOT NULL,
+                downloads VARCHAR(255),
+                score REAL,
+                minInstalls INT,
+                total_reviews INT,
+                updated_at TIMESTAMP,
+                adSupported BOOLEAN,
+                FOREIGN KEY (app_id) REFERENCES Apps(app_id)
+            );
             """)
             self.connector.commit()
 
-    def insert_or_update_app(self, app_details):
+    def insert_or_update_app_details(self, app_details):
         with self.connector.cursor() as cursor:
             cursor.execute("""
-                INSERT INTO Apps (app_id, downloads, score, mininstalls, total_reviews, updated_at, version, adsupported, ratings)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO Apps (app_id, version, ratings)
+                VALUES (%s, %s, %s)
                 ON CONFLICT (app_id) DO UPDATE SET
-                downloads = EXCLUDED.downloads,
-                score = EXCLUDED.score,
-                mininstalls = EXCLUDED.minInstalls,
-                total_reviews = EXCLUDED.total_reviews,
-                updated_at = EXCLUDED.updated_at,
                 version = EXCLUDED.version,
-                adsupported = EXCLUDED.adSupported,
                 ratings = EXCLUDED.ratings;
-            """, (app_details['app_id'], app_details['downloads'], app_details['score'],
-                  app_details['minInstalls'], app_details['total_reviews'], app_details['updated_at'],
-                  app_details['version'], app_details['adSupported'], app_details['ratings']))
+            """, (app_details['app_id'], app_details['version'], app_details['ratings']))
             self.connector.commit()
+
+
+
+    def insert_or_update_app_attributes(self, app_attributes):
+        with self.connector.cursor() as cursor:
+            cursor.execute('''
+                INSERT INTO AppAttributes (app_id, downloads, score, mininstalls, total_reviews, updated_at, adSupported)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                '''
+            ,(app_attributes['app_id'], app_attributes['downloads'], app_attributes['score'], app_attributes['minInstalls']
+              , app_attributes['total_reviews'], app_attributes['updated_at'], app_attributes['adSupported']) )
+
+
 
 
 class ReviewRepository:
@@ -129,13 +139,16 @@ def APP_INTO_DB(app_id):
     app_repo = AppRepository(connector)
     review_repo = ReviewRepository(connector)
 
-    app_repo.create_table()
+    app_repo.create_app_table()
+
     review_repo.create_table()
 
     app_details = fetch_app_details(app_id=app_id)
     new_reviews_list = fetch_reviews(app_id=app_id)
     
-    app_repo.insert_or_update_app(app_details)
+    app_repo.insert_or_update_app_details(app_details)
+    app_repo.insert_or_update_app_attributes(app_details)
+
     review_repo.insert_or_update_reviews(app_id=app_id, new_reviews_list=new_reviews_list)
 
     connector.close()
