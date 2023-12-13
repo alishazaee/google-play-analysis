@@ -43,9 +43,9 @@ def fetch_app_details(app_id):
     )
 
     return {
-        "downloads": result.get('installs', 'Unknown'),
+        "installs": result.get('installs', 'Unknown'),
         "score": result.get('score', 'Unknown'),
-        "minInstalls": result.get('score', 'Unknown'),
+        "minInstalls": result.get('minInstalls', 'Unknown'),
         "total_reviews": result.get('reviews', 'Unknown'),
         "updated_at": str(datetime.fromtimestamp((result.get('updated')))),
         "version": result.get('version', 'Unknown'),

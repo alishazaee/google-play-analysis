@@ -23,13 +23,14 @@ class AppRepository:
                 );
                 CREATE TABLE IF NOT EXISTS AppAttributes (
                 app_id VARCHAR(255) NOT NULL,
-                downloads VARCHAR(255),
+                installs VARCHAR(255),
                 score REAL,
-                minInstalls INT,
-                total_reviews INT,
+                minInstalls BIGINT,
+                total_reviews BIGINT,
                 updated_at TIMESTAMP,
                 adSupported BOOLEAN,
-                FOREIGN KEY (app_id) REFERENCES Apps(app_id)
+                FOREIGN KEY (app_id) REFERENCES Apps(app_id),
+                timestamp TIMESTAMP NOT NULL DEFAULT now()
             );
             """)
             self.connector.commit()
@@ -50,10 +51,10 @@ class AppRepository:
     def insert_or_update_app_attributes(self, app_attributes):
         with self.connector.cursor() as cursor:
             cursor.execute('''
-                INSERT INTO AppAttributes (app_id, downloads, score, mininstalls, total_reviews, updated_at, adSupported)
+                INSERT INTO AppAttributes (app_id, installs, score, mininstalls, total_reviews, updated_at, adSupported)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
                 '''
-            ,(app_attributes['app_id'], app_attributes['downloads'], app_attributes['score'], app_attributes['minInstalls']
+            ,(app_attributes['app_id'], app_attributes['installs'], app_attributes['score'], app_attributes['minInstalls']
               , app_attributes['total_reviews'], app_attributes['updated_at'], app_attributes['adSupported']) )
 
 
