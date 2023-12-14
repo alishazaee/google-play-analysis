@@ -11,7 +11,7 @@ from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from drf_spectacular.utils import extend_schema
 from gooanalysis.api.pagination import  get_paginated_response, LimitOffsetPagination, get_paginated_response_context
 from django.core.exceptions import ObjectDoesNotExist
-from .services import delete_app
+from .services import delete_app , update_app
 
 from .models import Applications
 
@@ -71,16 +71,39 @@ class AppApi(APIView):
 
 
 class AppDetailApi(APIView):
-    class InputAppSerializer(serializers.Serializer):
+    class InputAppDetailSerializer(serializers.Serializer):
         name = serializers.CharField(max_length=255)
-        app_id = serializers.CharField(max_length=255)
         category = serializers.CharField(max_length=255)
 
-    class OutputAppSerializer(serializers.Serializer):
+    class OutputAppDetailSerializer(serializers.Serializer):
         name = serializers.CharField(max_length=255)
-        app_id = serializers.CharField(max_length=255)
         category = serializers.CharField(max_length=255)
+        app_id = serializers.CharField(max_length=255)
 
+    @extend_schema(request=InputAppDetailSerializer , responses=OutputAppDetailSerializer)
+    def put(self , request , app_id):
+        serializer = self.InputAppDetailSerializer(data = request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            query = update_app(
+                app_id=app_id,
+                name=serializer.validated_data.get('name'),
+                category=serializer.validated_data.get('category'),
+                )
+        except ObjectDoesNotExist as ex :
+            return Response(
+                {"detail" :"we did not find the app!"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except Exception as ex:
+            return Response(
+                {"detail": "Database Error - " + str(ex)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serilaizer = self.OutputAppDetailSerializer(query)
+        return Response(serilaizer.data)
+     
 
     def delete(self,request , app_id):
         try:
@@ -100,3 +123,4 @@ class AppDetailApi(APIView):
 
 
         return Response(status=status.HTTP_204_NO_CONTENT) 
+    

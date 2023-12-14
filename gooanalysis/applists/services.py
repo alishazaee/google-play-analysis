@@ -12,3 +12,12 @@ def create_app(*, name:str , app_id: str , category: str ) -> Applications:
 @transaction.atomic
 def delete_app(*,app_id:str):
     Applications.objects.get(app_id=app_id).delete()
+
+@transaction.atomic
+def update_app(*,app_id:str, category:str , name:str ) -> Applications:
+    app = Applications.objects.get(app_id=app_id)
+    app.category=category
+    app.name=name
+    app.save()
+    return app
+
