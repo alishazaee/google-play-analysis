@@ -10,6 +10,8 @@ from .services import create_app
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from drf_spectacular.utils import extend_schema
 from gooanalysis.api.pagination import  get_paginated_response, LimitOffsetPagination, get_paginated_response_context
+from django.core.exceptions import ObjectDoesNotExist
+from .services import delete_app
 
 from .models import Applications
 
@@ -68,3 +70,33 @@ class AppApi(APIView):
     
 
 
+class AppDetailApi(APIView):
+    class InputAppSerializer(serializers.Serializer):
+        name = serializers.CharField(max_length=255)
+        app_id = serializers.CharField(max_length=255)
+        category = serializers.CharField(max_length=255)
+
+    class OutputAppSerializer(serializers.Serializer):
+        name = serializers.CharField(max_length=255)
+        app_id = serializers.CharField(max_length=255)
+        category = serializers.CharField(max_length=255)
+
+
+    def delete(self,request , app_id):
+        try:
+             delete_app(app_id=app_id)
+        except ObjectDoesNotExist as ex:
+            return Response(
+                {"detail": "Post Not Found - "},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
+        except Exception as ex:
+            return Response(
+                {"detail": " Error Deleting - " + str(ex)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
+        return Response(status=status.HTTP_204_NO_CONTENT) 

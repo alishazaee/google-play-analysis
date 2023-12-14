@@ -8,3 +8,7 @@ from .models import Applications
 def create_app(*, name:str , app_id: str , category: str ) -> Applications:
     application = Applications.objects.create( name=name  , app_id = app_id , category = category )
     return application
+
+@transaction.atomic
+def delete_app(*,app_id:str):
+    Applications.objects.get(app_id=app_id).delete()
