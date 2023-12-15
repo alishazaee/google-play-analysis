@@ -18,32 +18,35 @@ class AppRepository:
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS Apps (
                     app_id VARCHAR(255) PRIMARY KEY,
-                    version VARCHAR(255),
-                    ratings VARCHAR(255)
+                    summary VARCHAR(255)
                 );
+            """)
+            cursor.execute("""
                 CREATE TABLE IF NOT EXISTS AppAttributes (
                 app_id VARCHAR(255) NOT NULL,
-                installs VARCHAR(255),
+                installs BIGINT,
                 score REAL,
                 minInstalls BIGINT,
                 total_reviews BIGINT,
                 updated_at TIMESTAMP,
                 adSupported BOOLEAN,
                 FOREIGN KEY (app_id) REFERENCES Apps(app_id),
+                version VARCHAR(255) ,
+                ratings BIGINT,
                 timestamp TIMESTAMP NOT NULL DEFAULT now()
             );
-            """)
+                           """)
+            
             self.connector.commit()
 
     def insert_or_update_app_details(self, app_details):
         with self.connector.cursor() as cursor:
             cursor.execute("""
-                INSERT INTO Apps (app_id, version, ratings)
-                VALUES (%s, %s, %s)
+                INSERT INTO Apps (app_id, summary)
+                VALUES (%s, %s)
                 ON CONFLICT (app_id) DO UPDATE SET
-                version = EXCLUDED.version,
-                ratings = EXCLUDED.ratings;
-            """, (app_details['app_id'], app_details['version'], app_details['ratings']))
+                summary = EXCLUDED.summary;
+            """, (app_details['app_id'], app_details['summary']))
             self.connector.commit()
 
 
@@ -51,11 +54,11 @@ class AppRepository:
     def insert_or_update_app_attributes(self, app_attributes):
         with self.connector.cursor() as cursor:
             cursor.execute('''
-                INSERT INTO AppAttributes (app_id, installs, score, mininstalls, total_reviews, updated_at, adSupported)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO AppAttributes (app_id, installs, score, mininstalls, total_reviews, updated_at, adSupported , version , ratings)
+                VALUES (%s, %s, %s, %s, %s, %s, %s , %s,%s)
                 '''
             ,(app_attributes['app_id'], app_attributes['installs'], app_attributes['score'], app_attributes['minInstalls']
-              , app_attributes['total_reviews'], app_attributes['updated_at'], app_attributes['adSupported']) )
+              , app_attributes['total_reviews'], app_attributes['updated_at'], app_attributes['adSupported'] , app_attributes['version'] , app_attributes['ratings']) )
 
 
 
@@ -141,8 +144,9 @@ def APP_INTO_DB(app_id):
     review_repo = ReviewRepository(connector)
 
     app_repo.create_app_table()
-
     review_repo.create_table()
+
+
 
     app_details = fetch_app_details(app_id=app_id)
     new_reviews_list = fetch_reviews(app_id=app_id)
