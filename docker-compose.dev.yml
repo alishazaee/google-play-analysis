@@ -47,6 +47,8 @@ services:
       - MB_DB_HOST=db
     depends_on:
       - db
+    volumes:
+      - metabase-data:/metabase-data
 
   flower:
     image: mher/flower
@@ -62,4 +64,4 @@ services:
 volumes:
     postgres-data:
     redis-data:
-
+    metabase-data:

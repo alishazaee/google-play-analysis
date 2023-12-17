@@ -4,6 +4,8 @@ from google_play_scraper import search
 from dotenv import load_dotenv
 from pathlib import Path
 import os
+import urllib.parse as urlparse
+
 from psycopg2 import sql 
 import psycopg2
 from datetime import datetime
@@ -126,20 +128,38 @@ class ReviewRepository:
 
 
 def DB_Connector():
+    # Check if DATABASE_URL environment variable is set
     database_url = os.getenv('DATABASE_URL')
 
-    # If DATABASE_URL is set, use it
+    # If DATABASE_URL is set, parse it and use the components
     if database_url:
-        conn = psycopg2.connect(database_url)
+        urlparse.uses_netloc.append("postgres")
+        url = urlparse.urlparse(database_url)
 
-    conn = psycopg2.connect(
-        dbname="gooanalysis",
-        user="user",
-        password="password",
-        host="127.0.0.1",
-        port="5432"
-    )    
+        # Extract components from the URL
+        dbname = url.path[1:]
+        user = url.username
+        password = url.password
+        host = url.hostname
+        port = url.port
 
+        # Connect using the extracted components
+        conn = psycopg2.connect(
+            dbname=dbname,
+            user=user,
+            password=password,
+            host=host,
+            port=port
+        )
+    else:
+        # Otherwise, use the static configuration
+        conn = psycopg2.connect(
+            dbname="gooanalysis",
+            user="user",
+            password="password",
+            host="127.0.0.1",
+            port="5432"
+        )
     return conn
 
 

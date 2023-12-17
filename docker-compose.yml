@@ -8,6 +8,8 @@ services:
       - POSTGRES_DB=gooanalysis
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data/
 
   pgadmin:
     container_name: pgadmin4_container
@@ -44,7 +46,7 @@ services:
       dockerfile: docker/production.Dockerfile
     # command: celery -A gooanalysis.tasks worker -l info --without-gossip --without-mingle --without-heartbeat
     container_name: worker
-    command: ./docker/celery_entrypoint.sh
+    command: bash -c "python manage.py setup_periodic_tasks && ./docker/celery_entrypoint.sh"
     environment:
       - DATABASE_URL=psql://user:password@db:5432/gooanalysis
       - CELERY_BROKER_URL=redis://cache:6379/0
@@ -61,9 +63,9 @@ services:
       dockerfile: docker/production.Dockerfile
     # command: celery -A gooanalysis.tasks beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     container_name: beats
-    command: ./docker/beats_entrypoint.sh
+    command: bash -c "python manage.py setup_periodic_tasks && ./docker/beats_entrypoint.sh"
     environment:
-      - DATABASE_URL=psql://user:password@db:5432/gooanalysis
+      - DATABASE_URL=psql://user:password@db:5432/gooanalysis 
       - CELERY_BROKER_URL=redis://cache:6379/0
     volumes:
       - .:/app
@@ -90,3 +92,10 @@ services:
       - MB_DB_HOST=db
     depends_on:
       - db
+    volumes:
+      - metabase-data:/metabase-data
+
+
+volumes:
+  postgres-data:
+  metabase-data:
