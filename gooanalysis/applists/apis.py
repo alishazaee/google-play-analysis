@@ -5,7 +5,7 @@ from rest_framework import serializers
 from django.core.validators import MinLengthValidator
 from gooanalysis.users.models import BaseUser , Profile
 from gooanalysis.api.mixins import ApiAuthMixin
-from .selectors import get_apps
+from .selectors import get_apps , get_application_ids , get_app_based_on_id
 from .services import create_app
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from drf_spectacular.utils import extend_schema
@@ -104,6 +104,26 @@ class AppDetailApi(APIView):
         serilaizer = self.OutputAppDetailSerializer(query)
         return Response(serilaizer.data)
      
+    def get(self , request , app_id):
+        try:
+            query = get_app_based_on_id(
+                app_id=app_id
+                )
+        except ObjectDoesNotExist as ex :
+            return Response(
+                {"detail" :"we did not find the app!"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except Exception as ex:
+            return Response(
+                {"detail": "Database Error - " + str(ex)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serilaizer = self.OutputAppDetailSerializer(query)
+        return Response(serilaizer.data)
+     
+
 
     def delete(self,request , app_id):
         try:
