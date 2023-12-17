@@ -1,0 +1,47 @@
+---
+- name: Deploy Docker Compose on a server
+  hosts: remote
+  become: yes
+
+  tasks:
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: latest
+      when: ansible_os_family == 'Debian'
+    
+
+    - name: Install Docker (RedHat/CentOS)
+      yum:
+        name: docker
+        state: latest
+      when: ansible_os_family == 'RedHat'
+
+    - name: Start Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Install Docker Compose
+      get_url:
+        url: https://github.com/docker/compose/releases/download/1.29.2/docker-compose-{{ ansible_system }}-{{ ansible_userspace_architecture }}
+        dest: /usr/local/bin/docker-compose
+        mode: 'u+x,g+x'
+      register: download_docker_compose
+      until: download_docker_compose is succeeded
+
+    - name: Clone repository with docker-compose.yml (if needed)
+      git:
+        repo: 'https://github.com/alishb80/google-play-analysis.git'
+        dest: /tmp/google-play-analysis
+
+    - name: Down Docker Compose
+      command: docker-compose down 
+      args:
+        chdir: /tmp/google-play-analysis
+
+    - name: Run Docker Compose
+      command: docker-compose up --build  -d
+      args:
+        chdir: /tmp/google-play-analysis
