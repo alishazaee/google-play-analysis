@@ -10,6 +10,6 @@ class AppFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Applications
     
-    app_id = factory.LazyAttribute(lambda _ :f'{faker.unique.company()}')
-    category = factory.LazyAttribute(lambda _: f'{faker.unique.company()}' )
-    name = factory.LazyAttribute(lambda _: f'{faker.unique.company()}' )
+    app_id = factory.LazyAttribute(lambda _ :f'{faker.company()}')
+    category = factory.LazyAttribute(lambda _: f'{faker.company()}' )
+    name = factory.LazyAttribute(lambda _: f'{faker.company()}' )
