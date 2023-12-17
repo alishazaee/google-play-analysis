@@ -126,6 +126,12 @@ class ReviewRepository:
 
 
 def DB_Connector():
+    database_url = os.getenv('DATABASE_URL')
+
+    # If DATABASE_URL is set, use it
+    if database_url:
+        conn = psycopg2.connect(database_url)
+
     conn = psycopg2.connect(
         dbname="gooanalysis",
         user="user",

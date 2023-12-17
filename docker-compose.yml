@@ -4,12 +4,20 @@ services:
   db:
     image: postgres:14.1
     container_name: postgres
-    ports:
-      - 5432:5432
     environment:
       - POSTGRES_DB=gooanalysis
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
+
+  pgadmin:
+    container_name: pgadmin4_container
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: 'pg_pass'
+    ports:
+      - "5050:80"
 
 
   django:
@@ -20,14 +28,14 @@ services:
     command: ./docker/web_entrypoint.sh
     environment:
       - DATABASE_URL=psql://user:password@db:5432/gooanalysis
-      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - CELERY_BROKER_URL=redis://cache:6379/0
     volumes:
       - .:/app
     ports:
       - "8000:8000"
     depends_on:
       - db
-      - rabbitmq
+      - cache
     restart: on-failure
 
   celery:
@@ -39,11 +47,12 @@ services:
     command: ./docker/celery_entrypoint.sh
     environment:
       - DATABASE_URL=psql://user:password@db:5432/gooanalysis
-      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - CELERY_BROKER_URL=redis://cache:6379/0
     volumes:
       - .:/app
     depends_on:
       - db
+      - cache
     restart: on-failure
 
   beats:
@@ -55,10 +64,29 @@ services:
     command: ./docker/beats_entrypoint.sh
     environment:
       - DATABASE_URL=psql://user:password@db:5432/gooanalysis
-      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - CELERY_BROKER_URL=redis://cache:6379/0
     volumes:
       - .:/app
     depends_on:
       - db
-      - rabbitmq
+      - cache
     restart: on-failure
+
+  cache:
+    image: redis:alpine
+    container_name: redis
+
+  metabase:
+    image: metabase/metabase:latest
+    container_name: metabase
+    ports:
+      - "3000:3000"
+    environment:
+      - MB_DB_TYPE=postgres
+      - MB_DB_DBNAME=gooanalysis
+      - MB_DB_PORT=5432
+      - MB_DB_USER=user
+      - MB_DB_PASS=password
+      - MB_DB_HOST=db
+    depends_on:
+      - db
