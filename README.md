@@ -3,6 +3,8 @@
 ## Overview
 Welcome to the Google Play Store Analysis Project! This repository is dedicated to providing a thorough analysis of applications available on the Google Play Store. Our goal is to uncover trends, evaluate user preferences, and offer valuable insights that can guide app developers and digital marketers in making informed decisions.
 
+![photo_5764771440917333102_w](https://github.com/alishb80/google-play-analysis/assets/53411387/4aca7575-33de-4bbe-acf0-125bc0dcabb1)
+
 ## Key Features
 - **Comprehensive Data Extraction**: Automated scripts to fetch the latest data from the Google Play Store.
 - **Robust Data Cleaning & Preprocessing**: Ensuring data quality for accurate analysis.
@@ -62,7 +64,5 @@ Before you begin, ensure you have the following:
     celery -A gooanalysis.tasks worker -l info --without-gossip --without-mingle --without-heartbeat
     celery -A gooanalysis.tasks beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     ```
-
-![photo_5764771440917333102_w](https://github.com/alishb80/google-play-analysis/assets/53411387/4aca7575-33de-4bbe-acf0-125bc0dcabb1)
 
 ![photo_5764771440917333102_w (1)](https://github.com/alishb80/google-play-analysis/assets/53411387/ccbd8718-9e32-492f-ac04-b4159d4d83e8)
