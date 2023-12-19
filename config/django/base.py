@@ -16,7 +16,6 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
 LOCAL_APPS = [
     'gooanalysis.core.apps.CoreConfig',
     'gooanalysis.common.apps.CommonConfig',
-    'gooanalysis.users.apps.UsersConfig',
     'gooanalysis.authentication.apps.AuthenticationConfig',
     'gooanalysis.applists.apps.ApplistsConfig',
     'gooanalysis.tasks.apps.TasksConfig',
@@ -117,7 +116,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-AUTH_USER_MODEL = 'users.BaseUser'
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/

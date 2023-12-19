@@ -3,7 +3,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import serializers
 from django.core.validators import MinLengthValidator
-from gooanalysis.users.models import BaseUser , Profile
 from gooanalysis.api.mixins import ApiAuthMixin
 from .selectors import get_apps , get_application_ids , get_app_based_on_id
 from .services import create_app

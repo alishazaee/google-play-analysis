@@ -63,4 +63,6 @@ Before you begin, ensure you have the following:
     celery -A gooanalysis.tasks beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     ```
 
+![photo_5764771440917333102_w](https://github.com/alishb80/google-play-analysis/assets/53411387/4aca7575-33de-4bbe-acf0-125bc0dcabb1)
 
+![photo_5764771440917333102_w (1)](https://github.com/alishb80/google-play-analysis/assets/53411387/ccbd8718-9e32-492f-ac04-b4159d4d83e8)
