@@ -1,0 +1,40 @@
+---
+- name: Install docker
+  hosts: docker_machines
+  # roles:
+  #   - role: containerd/setup
+  #     tags: containerd-setup
+  #   - role: docker
+  #     tags: docker
+  post_tasks:
+    - name: Run the Docker daemon as a non-root user (Rootless mode)
+      become: true
+      user:
+        name: "{{ ansible_user }}"
+        append: true
+        groups: docker
+
+    - name: Install python3-docker apt package
+      become: true
+      apt:
+        name: python3-docker
+        state: present
+  tags: docker
+
+- name: Install docker-compose
+  hosts:  docker_machines
+  tasks:
+    - name: Install docker-compose
+      become: true
+      get_url:
+        url:  "{{ docker_compose_url  }}"
+        dest: /usr/local/bin/docker-compose
+        mode: u=rwx,g=rx,o=rx
+
+    - name: Check whether docker-compose is installed correctly
+      command: docker-compose --version
+      register: docker_compose_version_result
+      changed_when: false
+      failed_when:  docker_compose_version not in docker_compose_version_result.stdout
+
+  tags: docker-compose
